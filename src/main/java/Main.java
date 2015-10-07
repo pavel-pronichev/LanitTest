@@ -1,12 +1,23 @@
 import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
+import java.util.List;
 
-public class Main {
-    public static void main(String[] args) {
+public class Main{
 
-        JFrame frame = new JFrame("title");
+
+    static JFrame frame;
+    static JTextField textField;
+    static JButton addButton;
+    static JButton deleteButton;
+    static JLabel clockLabel;
+    static JProgressBar progressBar;
+
+    public Main(){
+        frame = new JFrame("title");
         frame.setSize(new Dimension(600, 400));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -14,15 +25,15 @@ public class Main {
 
 
 
-        JTextField textField = new JTextField();
+        textField = new JTextField();
 
 
-        JButton addButton = new JButton("Добавить");
-        JButton deleteButton = new JButton("Удалить");
+        addButton = new JButton("Добавить");
+        deleteButton = new JButton("Удалить");
 
-        JLabel clockLabel = new JLabel();
+        clockLabel = new JLabel();
 
-        JProgressBar progressBar = new JProgressBar();
+        progressBar = new JProgressBar();
 
         frame.add(textField, new GridBagConstraints(1,1,2,1,50,3,GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL,new Insets(1,1,1,1),5,5));
@@ -35,12 +46,54 @@ public class Main {
         frame.add(progressBar, new GridBagConstraints(2, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
 
+
         frame.setVisible(true);
         frame.pack();
 
+        TimeWorker timeWorker = new TimeWorker();
+        //timeWorker.addPropertyChangeListener(this);
+        timeWorker.execute();
+    }
+
+    /*@Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        System.out.println(evt);
+    }*/
+
+    class TimeWorker extends SwingWorker<Void,Void> {
+        @Override
+        protected Void doInBackground() throws Exception {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm:ss");
+
+            while (true) {
+                clockLabel.setText(simpleDateFormat.format(new Date()));
+
+                /*try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }*/
 
 
-        class ClockHere implements Runnable{
+            }
+            //return null;
+        }
+    }
+
+
+    public static void main(String[] args) {
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Main this_application = new Main();
+            }
+        });
+    }
+
+
+
+        /*class ClockHere implements Runnable{
 
             private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm:ss");
             @Override
@@ -57,8 +110,7 @@ public class Main {
             }
         }
         Thread clockThread = new Thread(new ClockHere());
-        clockThread.start();
+        clockThread.start();*/
 
 
     }
-}

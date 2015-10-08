@@ -2,12 +2,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Main {
+public class Main implements PropertyChangeListener{
 
     static DataHandler dataHandler;
     static JFrame frame;
@@ -17,6 +19,7 @@ public class Main {
     static JLabel clockLabel;
     static JProgressBar progressBar;
     static Date date;
+    static JProgressBar progressBar1;
 
     public Main() {
 
@@ -44,6 +47,10 @@ public class Main {
         progressBar.setStringPainted(true);
         progressBar.setValue(100);
 
+        progressBar1 = new JProgressBar();
+        progressBar1.setStringPainted(true);
+        progressBar1.setValue(0);
+
         frame.add(textField, new GridBagConstraints(1, 1, 2, 1, 50, 3, GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 5, 5));
         frame.add(addButton, new GridBagConstraints(1, 2, 1, 1, 50, 3, GridBagConstraints.NORTH,
@@ -53,6 +60,8 @@ public class Main {
         frame.add(clockLabel, new GridBagConstraints(1, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
         frame.add(progressBar, new GridBagConstraints(2, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
+                GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
+        frame.add(progressBar1, new GridBagConstraints(2, 4, 1, 1, 50, 3, GridBagConstraints.SOUTH,
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
 
 
@@ -103,9 +112,14 @@ public class Main {
         @Override
         protected void done() {
             super.done();
-            SerializeDataHandler serializeDataHandler = new SerializeDataHandler();
-            serializeDataHandler.execute();
+            qwerty();
+
         }
+    }
+    private void qwerty(){
+        SerializeDataHandler serializeDataHandler = new SerializeDataHandler();
+        serializeDataHandler.addPropertyChangeListener(this);
+        serializeDataHandler.execute();
     }
 
     class DeleteRecordsWorker extends SwingWorker<Void, Void> {
@@ -134,17 +148,22 @@ public class Main {
 
         @Override
         protected Void doInBackground() throws Exception {
-            if ((new Date().getTime() - date.getTime()) > 10000) {
+            /*if ((new Date().getTime() - date.getTime()) > 10000) {
                 synchronized (dataHandler) {
                     FileOutputStream fileOutputStream = new FileOutputStream("dataSave");
                     ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                    objectOutputStream.writeObject(dataHandler);
+                    objectOutputStream.writeObject(dataHandler.getMap());
                     fileOutputStream.close();
                     objectOutputStream.close();
-
-                    df
                     date = new Date();
-                }
+                }*/
+                synchronized (dataHandler) {
+                    FileOutputStream fileOutputStream = new FileOutputStream("dataSave");
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                    objectOutputStream.writeObject(dataHandler.getMap());
+                    fileOutputStream.close();
+                    objectOutputStream.close();
+                    date = new Date();
             }
             return null;
         }
@@ -178,4 +197,11 @@ public class Main {
         });
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if("progress" == evt.getPropertyName()){
+            int progress = (Integer) evt.getNewValue();
+            progressBar1.setValue(progress);
+        }
+    }
 }

@@ -9,7 +9,7 @@ import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Main implements PropertyChangeListener{
+public class Main {
 
     static DataHandler dataHandler;
     static JFrame frame;
@@ -19,13 +19,13 @@ public class Main implements PropertyChangeListener{
     static JLabel clockLabel;
     static JProgressBar progressBar;
     static Date date;
-    static JProgressBar progressBar1;
+    static JLabel addLabel;
 
     public Main() {
 
         date = new Date();
         dataHandler = new DataHandler();
-        frame = new JFrame("title");
+        frame = new JFrame("App for Lanit");
         frame.setSize(new Dimension(600, 400));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -42,26 +42,28 @@ public class Main implements PropertyChangeListener{
         deleteButton.addActionListener(new DeleteRecordsButtonActionListener());
 
         clockLabel = new JLabel();
+        addLabel = new JLabel();
+        addLabel.setText("Ready");
 
         progressBar = new JProgressBar();
         progressBar.setStringPainted(true);
         progressBar.setValue(100);
 
-        progressBar1 = new JProgressBar();
+        /*progressBar1 = new JProgressBar();
         progressBar1.setStringPainted(true);
-        progressBar1.setValue(0);
+        progressBar1.setValue(0);*/
 
-        frame.add(textField, new GridBagConstraints(1, 1, 2, 1, 50, 3, GridBagConstraints.NORTH,
+        frame.add(textField, new GridBagConstraints(1, 1, 4, 1, 50, 3, GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 5, 5));
-        frame.add(addButton, new GridBagConstraints(1, 2, 1, 1, 50, 3, GridBagConstraints.NORTH,
+        frame.add(addButton, new GridBagConstraints(1, 2, 3, 1, 50, 3, GridBagConstraints.NORTH,
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
-        frame.add(deleteButton, new GridBagConstraints(2, 2, 1, 1, 50, 3, GridBagConstraints.NORTH,
+        frame.add(deleteButton, new GridBagConstraints(4, 2, 1, 1, 50, 3, GridBagConstraints.NORTH,
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
         frame.add(clockLabel, new GridBagConstraints(1, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
-        frame.add(progressBar, new GridBagConstraints(2, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
-                GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
-        frame.add(progressBar1, new GridBagConstraints(2, 4, 1, 1, 50, 3, GridBagConstraints.SOUTH,
+        frame.add(addLabel, new GridBagConstraints(2, 3, 2, 1, 50, 3, GridBagConstraints.SOUTH,
+                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
+        frame.add(progressBar, new GridBagConstraints(4, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
 
 
@@ -98,6 +100,7 @@ public class Main implements PropertyChangeListener{
     class AddRecordsWorker extends SwingWorker<Void, Void> {
         @Override
         protected Void doInBackground() throws Exception {
+            addLabel.setText("Добавление");
             try {
                 int N = Integer.parseInt(textField.getText());
                 progressBar.setValue(0);
@@ -113,18 +116,20 @@ public class Main implements PropertyChangeListener{
         protected void done() {
             super.done();
             qwerty();
+            addLabel.setText("Готово");
 
         }
     }
-    private void qwerty(){
+
+    private void qwerty() {
         SerializeDataHandler serializeDataHandler = new SerializeDataHandler();
-        serializeDataHandler.addPropertyChangeListener(this);
         serializeDataHandler.execute();
     }
 
     class DeleteRecordsWorker extends SwingWorker<Void, Void> {
         @Override
         protected Void doInBackground() throws Exception {
+            addLabel.setText("Удаление");
             try {
                 int N = Integer.parseInt(textField.getText());
                 progressBar.setValue(0);
@@ -141,6 +146,7 @@ public class Main implements PropertyChangeListener{
             super.done();
             SerializeDataHandler serializeDataHandler = new SerializeDataHandler();
             serializeDataHandler.execute();
+            addLabel.setText("Готово");
         }
     }
 
@@ -148,7 +154,7 @@ public class Main implements PropertyChangeListener{
 
         @Override
         protected Void doInBackground() throws Exception {
-            /*if ((new Date().getTime() - date.getTime()) > 10000) {
+            if ((new Date().getTime() - date.getTime()) > 10000) {
                 synchronized (dataHandler) {
                     FileOutputStream fileOutputStream = new FileOutputStream("dataSave");
                     ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
@@ -156,14 +162,9 @@ public class Main implements PropertyChangeListener{
                     fileOutputStream.close();
                     objectOutputStream.close();
                     date = new Date();
-                }*/
-                synchronized (dataHandler) {
-                    FileOutputStream fileOutputStream = new FileOutputStream("dataSave");
-                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                    objectOutputStream.writeObject(dataHandler.getMap());
-                    fileOutputStream.close();
-                    objectOutputStream.close();
-                    date = new Date();
+
+                }
+
             }
             return null;
         }
@@ -197,11 +198,5 @@ public class Main implements PropertyChangeListener{
         });
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if("progress" == evt.getPropertyName()){
-            int progress = (Integer) evt.getNewValue();
-            progressBar1.setValue(progress);
-        }
-    }
+
 }

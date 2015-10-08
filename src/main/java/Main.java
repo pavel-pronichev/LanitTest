@@ -141,6 +141,8 @@ public class Main {
                     objectOutputStream.writeObject(dataHandler);
                     fileOutputStream.close();
                     objectOutputStream.close();
+
+                    df
                     date = new Date();
                 }
             }

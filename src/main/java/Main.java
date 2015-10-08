@@ -2,10 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Main{
+public class Main {
 
     static DataHandler dataHandler;
     static JFrame frame;
@@ -14,16 +16,17 @@ public class Main{
     static JButton deleteButton;
     static JLabel clockLabel;
     static JProgressBar progressBar;
+    static Date date;
 
-    public Main(){
+    public Main() {
 
+        date = new Date();
         dataHandler = new DataHandler();
         frame = new JFrame("title");
         frame.setSize(new Dimension(600, 400));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setLayout(new GridBagLayout());
-
 
 
         textField = new JTextField();
@@ -39,17 +42,18 @@ public class Main{
 
         progressBar = new JProgressBar();
         progressBar.setStringPainted(true);
+        progressBar.setValue(100);
 
-        frame.add(textField, new GridBagConstraints(1,1,2,1,50,3,GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL,new Insets(1,1,1,1),5,5));
+        frame.add(textField, new GridBagConstraints(1, 1, 2, 1, 50, 3, GridBagConstraints.NORTH,
+                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 5, 5));
         frame.add(addButton, new GridBagConstraints(1, 2, 1, 1, 50, 3, GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
+                GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
         frame.add(deleteButton, new GridBagConstraints(2, 2, 1, 1, 50, 3, GridBagConstraints.NORTH,
-                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
+                GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
         frame.add(clockLabel, new GridBagConstraints(1, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
         frame.add(progressBar, new GridBagConstraints(2, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
-                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
+                GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
 
 
         frame.setVisible(true);
@@ -60,18 +64,15 @@ public class Main{
         timeWorker.execute();
     }
 
-    /*@Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        System.out.println(evt);
-    }*/
 
-    class TimeWorker extends SwingWorker<Void,Void> {
+    class TimeWorker extends SwingWorker<Void, Void> {
         @Override
         protected Void doInBackground() throws Exception {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm:ss");
 
             while (true) {
                 clockLabel.setText(simpleDateFormat.format(new Date()));
+                Thread.sleep(1000);
 
                 /*try {
                     Thread.sleep(1000);
@@ -88,14 +89,13 @@ public class Main{
     class AddRecordsWorker extends SwingWorker<Void, Void> {
         @Override
         protected Void doInBackground() throws Exception {
-           try {
-               int N = Integer.parseInt(textField.getText());
-               progressBar.setValue(0);
-               dataHandler.addRecords( N,progressBar);
-           }catch (NumberFormatException e){
-               System.out.println("This in not number");
-               JOptionPane.showMessageDialog(null, "You Type in not number");
-           }
+            try {
+                int N = Integer.parseInt(textField.getText());
+                progressBar.setValue(0);
+                dataHandler.addRecords(N, progressBar);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "You type in not number");
+            }
             return null;
 
         }
@@ -103,19 +103,46 @@ public class Main{
         @Override
         protected void done() {
             super.done();
+            SerializeDataHandler serializeDataHandler = new SerializeDataHandler();
+            serializeDataHandler.execute();
         }
     }
 
-    class DeleteRecordsWorker extends SwingWorker<Void,Void>{
+    class DeleteRecordsWorker extends SwingWorker<Void, Void> {
         @Override
         protected Void doInBackground() throws Exception {
             try {
                 int N = Integer.parseInt(textField.getText());
                 progressBar.setValue(0);
                 dataHandler.deleteRecords(N, progressBar);
-            }catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 System.out.println("This in not number");
                 JOptionPane.showMessageDialog(null, "You Type in not number");
+            }
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            super.done();
+            SerializeDataHandler serializeDataHandler = new SerializeDataHandler();
+            serializeDataHandler.execute();
+        }
+    }
+
+    class SerializeDataHandler extends SwingWorker<Void, Void> {
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            if ((new Date().getTime() - date.getTime()) > 10000) {
+                synchronized (dataHandler) {
+                    FileOutputStream fileOutputStream = new FileOutputStream("dataSave");
+                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                    objectOutputStream.writeObject(dataHandler);
+                    fileOutputStream.close();
+                    objectOutputStream.close();
+                    date = new Date();
+                }
             }
             return null;
         }
@@ -131,7 +158,7 @@ public class Main{
         }
     }
 
-    public class DeleteRecordsButtonActionListener implements ActionListener{
+    public class DeleteRecordsButtonActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             DeleteRecordsWorker deleteRecordsWorker = new DeleteRecordsWorker();
@@ -149,26 +176,4 @@ public class Main{
         });
     }
 
-
-
-        /*class ClockHere implements Runnable{
-
-            private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm:ss");
-            @Override
-            public void run() {
-                while (true){
-                    clockLabel.setText(simpleDateFormat.format(new Date()));
-
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        Thread clockThread = new Thread(new ClockHere());
-        clockThread.start();*/
-
-
-    }
+}

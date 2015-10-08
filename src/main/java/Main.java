@@ -1,14 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
 
 public class Main{
 
-
+    static DataHandler dataHandler;
     static JFrame frame;
     static JTextField textField;
     static JButton addButton;
@@ -17,6 +16,8 @@ public class Main{
     static JProgressBar progressBar;
 
     public Main(){
+
+        dataHandler = new DataHandler();
         frame = new JFrame("title");
         frame.setSize(new Dimension(600, 400));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -29,11 +30,15 @@ public class Main{
 
 
         addButton = new JButton("Добавить");
+        addButton.addActionListener(new AddRecordsButtonActionListener());
+
         deleteButton = new JButton("Удалить");
+        deleteButton.addActionListener(new DeleteRecordsButtonActionListener());
 
         clockLabel = new JLabel();
 
         progressBar = new JProgressBar();
+        progressBar.setStringPainted(true);
 
         frame.add(textField, new GridBagConstraints(1,1,2,1,50,3,GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL,new Insets(1,1,1,1),5,5));
@@ -80,6 +85,59 @@ public class Main{
         }
     }
 
+    class AddRecordsWorker extends SwingWorker<Void, Void> {
+        @Override
+        protected Void doInBackground() throws Exception {
+           try {
+               int N = Integer.parseInt(textField.getText());
+               progressBar.setValue(0);
+               dataHandler.addRecords( N,progressBar);
+           }catch (NumberFormatException e){
+               System.out.println("This in not number");
+               JOptionPane.showMessageDialog(null, "You Type in not number");
+           }
+            return null;
+
+        }
+
+        @Override
+        protected void done() {
+            super.done();
+        }
+    }
+
+    class DeleteRecordsWorker extends SwingWorker<Void,Void>{
+        @Override
+        protected Void doInBackground() throws Exception {
+            try {
+                int N = Integer.parseInt(textField.getText());
+                progressBar.setValue(0);
+                dataHandler.deleteRecords(N, progressBar);
+            }catch (NumberFormatException e){
+                System.out.println("This in not number");
+                JOptionPane.showMessageDialog(null, "You Type in not number");
+            }
+            return null;
+        }
+    }
+
+    public class AddRecordsButtonActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            AddRecordsWorker addRecordsWorker = new AddRecordsWorker();
+            addRecordsWorker.execute();
+
+        }
+    }
+
+    public class DeleteRecordsButtonActionListener implements ActionListener{
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            DeleteRecordsWorker deleteRecordsWorker = new DeleteRecordsWorker();
+            deleteRecordsWorker.execute();
+        }
+    }
 
     public static void main(String[] args) {
 

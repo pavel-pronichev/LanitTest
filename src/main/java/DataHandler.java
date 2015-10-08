@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Random;
@@ -11,16 +12,17 @@ public class DataHandler implements Serializable{
         map = new TreeMap<>();
     }
 
-    public static void addRecords(int N){
+    public static void addRecords(int N, JProgressBar progressBar){
         Random random = new Random();
        synchronized (map) {
-           for (int i = 0; i < N; i++) {
+           for (int i = 1; i <= N; i++) {
                map.put(new ComplexKey(), random.nextDouble());
+               progressBar.setValue(i*100/N);
            }
        }
     }
 
-    public static void deleteRecords(int N){
+    public static void deleteRecords(int N, JProgressBar progressBar){
 
         Set<ComplexKey> set = new HashSet<>();
         synchronized (map) {
@@ -29,8 +31,9 @@ public class DataHandler implements Serializable{
                 N = set.size();
             }
 
-            for (int i = 0; i < N; i++) {
+            for (int i = 1; i <= N; i++) {
                 map.remove(set.iterator().next());
+                progressBar.setValue(i*100/N);
             }
         }
     }

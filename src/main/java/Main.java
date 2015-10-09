@@ -20,6 +20,7 @@ public class Main {
     static JProgressBar progressBar;
     static Date date;
     static JLabel addLabel;
+    static JLabel serializeLabel;
 
     public Main() {
 
@@ -42,16 +43,17 @@ public class Main {
         deleteButton.addActionListener(new DeleteRecordsButtonActionListener());
 
         clockLabel = new JLabel();
+
         addLabel = new JLabel();
         addLabel.setText("Ready");
+
+        serializeLabel = new JLabel();
+
 
         progressBar = new JProgressBar();
         progressBar.setStringPainted(true);
         progressBar.setValue(100);
 
-        /*progressBar1 = new JProgressBar();
-        progressBar1.setStringPainted(true);
-        progressBar1.setValue(0);*/
 
         frame.add(textField, new GridBagConstraints(1, 1, 4, 1, 50, 3, GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 5, 5));
@@ -59,9 +61,11 @@ public class Main {
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
         frame.add(deleteButton, new GridBagConstraints(4, 2, 1, 1, 50, 3, GridBagConstraints.NORTH,
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
-        frame.add(clockLabel, new GridBagConstraints(1, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
+        frame.add(clockLabel, new GridBagConstraints(1, 4, 1, 1, 50, 3, GridBagConstraints.SOUTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
         frame.add(addLabel, new GridBagConstraints(2, 3, 2, 1, 50, 3, GridBagConstraints.SOUTH,
+                GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
+        frame.add(serializeLabel, new GridBagConstraints(4, 4, 2, 1, 50, 3, GridBagConstraints.SOUTH,
                 GridBagConstraints.HORIZONTAL, new Insets(1, 1, 1, 1), 20, 5));
         frame.add(progressBar, new GridBagConstraints(4, 3, 1, 1, 50, 3, GridBagConstraints.SOUTH,
                 GridBagConstraints.BOTH, new Insets(1, 1, 1, 1), 20, 5));
@@ -71,7 +75,6 @@ public class Main {
         frame.pack();
 
         TimeWorker timeWorker = new TimeWorker();
-        //timeWorker.addPropertyChangeListener(this);
         timeWorker.execute();
     }
 
@@ -108,6 +111,7 @@ public class Main {
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(null, "You type in not number");
             }
+            addLabel.setText("Готово");
             return null;
 
         }
@@ -116,14 +120,16 @@ public class Main {
         protected void done() {
             super.done();
             qwerty();
-            addLabel.setText("Готово");
+
 
         }
     }
 
     private void qwerty() {
+        serializeLabel.setText("Автосохранение");
         SerializeDataHandler serializeDataHandler = new SerializeDataHandler();
         serializeDataHandler.execute();
+        serializeLabel.setText("Автосохранение завершено");
     }
 
     class DeleteRecordsWorker extends SwingWorker<Void, Void> {
@@ -138,6 +144,7 @@ public class Main {
                 System.out.println("This in not number");
                 JOptionPane.showMessageDialog(null, "You Type in not number");
             }
+            addLabel.setText("Готово");
             return null;
         }
 
@@ -146,7 +153,6 @@ public class Main {
             super.done();
             SerializeDataHandler serializeDataHandler = new SerializeDataHandler();
             serializeDataHandler.execute();
-            addLabel.setText("Готово");
         }
     }
 
